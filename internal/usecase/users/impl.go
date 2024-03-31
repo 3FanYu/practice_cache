@@ -46,6 +46,10 @@ func (im *impl) CreateUser(c *gin.Context, input dao.RegisterInput) {
 func (im *impl) Auth(c *gin.Context, input dao.AuthInput) {
 	// Find the user by email
 	user, err := im.userDAO.GetUserByEmail(input.Email)
+	if user.VerifiedAt == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User email not verified"})
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 		return
