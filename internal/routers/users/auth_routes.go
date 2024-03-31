@@ -2,6 +2,7 @@ package users
 
 import (
 	"net/http"
+	"regexp"
 
 	"github.com/3fanyu/glossika/internal/dao"
 	uc "github.com/3fanyu/glossika/internal/usecase/users"
@@ -23,6 +24,10 @@ func CreateUser(uc uc.UserUsecase) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+		if !validatePassword(input.Password) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Password is invalid"})
+			return
+		}
 		uc.CreateUser(c, input)
 	}
 }
@@ -36,4 +41,28 @@ func AuthenticateUser(uc uc.UserUsecase) gin.HandlerFunc {
 		}
 		uc.Auth(c, input)
 	}
+}
+
+func validatePassword(password string) bool {
+	// check length
+	if len(password) < 6 || len(password) > 16 {
+		return false
+	}
+
+	// define regular expression
+	var (
+		upperCase = `[A-Z]`                                       // atleast one upper case
+		lowerCase = `[a-z]`                                       // atleast one lower case
+		special   = `[()\[\]{}<>+\-*/?,.:;"'_\\|~` + "`!@#$%^&=]" // atleast one special character
+	)
+
+	// create regular expression object
+	upperCaseRegex := regexp.MustCompile(upperCase)
+	lowerCaseRegex := regexp.MustCompile(lowerCase)
+	specialRegex := regexp.MustCompile(special)
+
+	// validate password
+	return upperCaseRegex.MatchString(password) &&
+		lowerCaseRegex.MatchString(password) &&
+		specialRegex.MatchString(password)
 }
