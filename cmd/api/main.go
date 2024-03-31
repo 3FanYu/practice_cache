@@ -1,6 +1,9 @@
 package main
 
 import (
+	"log"
+	"os"
+
 	"github.com/3fanyu/glossika/internal/dao"
 	"github.com/3fanyu/glossika/internal/routers/emails"
 	"github.com/3fanyu/glossika/internal/routers/items"
@@ -12,11 +15,17 @@ import (
 	"github.com/3fanyu/glossika/pkg/cachekit"
 	"github.com/3fanyu/glossika/pkg/dbkit"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	db := dbkit.NewGormDB("root:root@tcp(db:3306)/glossika?charset=utf8mb4&parseTime=True&loc=Local")
-	cache := cachekit.NewCache("redis:6379")
+	// Load environment variables from .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	db := dbkit.NewGormDB(os.Getenv("MYSQL_DSN") + "?charset=utf8mb4&parseTime=True&loc=Local")
+	cache := cachekit.NewCache(os.Getenv("REDIS_ADDR"))
 
 	//DAOs
 	userDAO := dao.NewUserDAO(db)
@@ -35,5 +44,5 @@ func main() {
 	items.RegisterRoutes(r, itemsUC, middleware.AuthMiddleware)
 	emails.RegisterRoutes(r, emailsUC)
 
-	r.Run(":3000")
+	r.Run(os.Getenv("APP_ADDR"))
 }
