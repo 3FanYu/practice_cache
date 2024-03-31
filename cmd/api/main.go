@@ -5,6 +5,7 @@ import (
 
 	"github.com/3fanyu/glossika/internal/routers/items"
 	"github.com/3fanyu/glossika/internal/routers/users"
+	"github.com/3fanyu/glossika/pkg/cachekit"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -12,11 +13,13 @@ import (
 
 func main() {
 	db := connectDatabase()
+	cache := cachekit.NewCache("redis:6379")
+
 	r := gin.Default()
 
 	// Register module routes
 	users.RegisterRoutes(r, db)
-	items.RegisterRoutes(r, db)
+	items.RegisterRoutes(r, db, cache)
 
 	r.Run(":3000")
 }
