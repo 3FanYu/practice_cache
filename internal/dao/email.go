@@ -20,9 +20,9 @@ func (dao *EmailDAO) CreateEmail(email *models.Email) error {
 }
 
 // GetUserByEmail finds a user by email
-func (dao *EmailDAO) GetEmailByTargetAddress(db *gorm.DB, targetAddress string) (*[]models.Email, error) {
+func (dao *EmailDAO) GetEmailByTargetAddress(targetAddress string) (*[]models.Email, error) {
 	var emails []models.Email
-	result := db.Where("target_address = ?", targetAddress).Find(&emails)
+	result := dao.db.Where("target_address = ?", targetAddress).Find(&emails)
 	if result.Error != nil {
 		return nil, result.Error
 	}

@@ -14,6 +14,7 @@ func RegisterRoutes(router *gin.Engine, uc uc.UserUsecase) {
 	{
 		userGroup.POST("/register", CreateUser(uc))
 		userGroup.POST("/sign_in", AuthenticateUser(uc))
+		userGroup.GET("/verify", VerifyUser(uc))
 	}
 }
 
@@ -40,6 +41,19 @@ func AuthenticateUser(uc uc.UserUsecase) gin.HandlerFunc {
 			return
 		}
 		uc.Auth(c, input)
+	}
+}
+
+func VerifyUser(uc uc.UserUsecase) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var input dao.VerifyInput
+		input.Email = c.Query("email")
+		input.Token = c.Query("token")
+		if input.Email == "" || input.Token == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Email and token are required"})
+			return
+		}
+		uc.Verify(c, input)
 	}
 }
 

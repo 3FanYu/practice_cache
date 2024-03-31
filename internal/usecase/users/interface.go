@@ -9,11 +9,13 @@ import (
 type UserDAO interface {
 	GetUserByEmail(email string) (*models.User, error)
 	CreateUser(user *models.User) error
+	UpdateUser(user *models.User) error
 }
 
 type UserUsecase interface {
 	Auth(c *gin.Context, input dao.AuthInput)
 	CreateUser(c *gin.Context, input dao.RegisterInput)
+	Verify(c *gin.Context, input dao.VerifyInput)
 }
 
 type EmailDAO interface {

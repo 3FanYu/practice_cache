@@ -2,11 +2,16 @@ package users
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/3fanyu/glossika/internal/dao"
 	"github.com/3fanyu/glossika/internal/models"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+)
+
+const (
+	TmpToken = "1234"
 )
 
 func NewUsecase(userDAO UserDAO, emailDAO EmailDAO) UserUsecase {
@@ -27,7 +32,7 @@ func (im *impl) CreateUser(c *gin.Context, input dao.RegisterInput) {
 	}
 
 	// Create user
-	user := models.User{Email: input.Email, EncryptedPassword: string(hashedPassword)}
+	user := models.User{Email: input.Email, EncryptedPassword: string(hashedPassword), VerifyToken: TmpToken}
 	if err := im.userDAO.CreateUser(&user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create user"})
 		return
@@ -62,9 +67,27 @@ func (im *impl) Auth(c *gin.Context, input dao.AuthInput) {
 
 }
 
+func (im *impl) Verify(c *gin.Context, input dao.VerifyInput) {
+	// Find the user by email
+	user, err := im.userDAO.GetUserByEmail(input.Email)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	if input.Token != user.VerifyToken {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		return
+	}
+	now := time.Now()
+	user.VerifiedAt = &now
+	im.userDAO.UpdateUser(user)
+
+	c.JSON(http.StatusOK, gin.H{"message": "Verify successfully"})
+
+}
+
 func sendVerificationEmail(dao EmailDAO, targetAddress string) {
 	// Send verification email logic here
-	token := "1234"
-	email := models.Email{TargetAddress: targetAddress, VerifyLink: "localhost:3000/v1/user/verify?token=" + token}
+	email := models.Email{TargetAddress: targetAddress, VerifyLink: "localhost:3000/v1/user/verify?token=" + TmpToken + "&email=" + targetAddress}
 	dao.CreateEmail(&email)
 }

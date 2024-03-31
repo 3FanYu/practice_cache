@@ -2,8 +2,10 @@ package main
 
 import (
 	"github.com/3fanyu/glossika/internal/dao"
+	"github.com/3fanyu/glossika/internal/routers/emails"
 	"github.com/3fanyu/glossika/internal/routers/items"
 	"github.com/3fanyu/glossika/internal/routers/users"
+	emailsUC "github.com/3fanyu/glossika/internal/usecase/emails"
 	itemsUC "github.com/3fanyu/glossika/internal/usecase/items"
 	usersUC "github.com/3fanyu/glossika/internal/usecase/users"
 	"github.com/3fanyu/glossika/pkg/cachekit"
@@ -20,13 +22,12 @@ func main() {
 	itemDAO := dao.NewItemDAO(db)
 	emailDAO := dao.NewEmailDAO(db)
 
-	//Usecases
-
 	r := gin.Default()
 
 	// Register module routes
 	users.RegisterRoutes(r, usersUC.NewUsecase(userDAO, emailDAO))
 	items.RegisterRoutes(r, itemsUC.NewUsecase(cache, itemDAO))
+	emails.RegisterRoutes(r, emailsUC.NewUsecase(emailDAO))
 
 	r.Run(":3000")
 }

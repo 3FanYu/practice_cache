@@ -29,6 +29,11 @@ func (dao *UserDAO) GetUserByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
+func (dao *UserDAO) UpdateUser(user *models.User) error {
+	result := dao.db.Save(&user)
+	return result.Error
+}
+
 type AuthInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -36,4 +41,8 @@ type AuthInput struct {
 type RegisterInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+type VerifyInput struct {
+	Email string `json:"email"`
+	Token string `json:"token"`
 }
