@@ -3,28 +3,27 @@ package items
 import (
 	"net/http"
 
-	business "github.com/3fanyu/glossika/internal/business/items"
+	"github.com/3fanyu/glossika/internal/dao"
 	"github.com/3fanyu/glossika/internal/routers/middleware"
-	"github.com/3fanyu/glossika/pkg/cachekit"
+	uc "github.com/3fanyu/glossika/internal/usecase/items"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
-func RegisterRoutes(router *gin.Engine, db *gorm.DB, cache cachekit.Cache) {
+func RegisterRoutes(router *gin.Engine, uc uc.ItemUsecase) {
 	itemGroup := router.Group("/v1/items")
 	itemGroup.Use(middleware.AuthMiddleware())
 	{
-		itemGroup.GET("/recommendations", GetItems(db, cache))
+		itemGroup.GET("/recommendations", GetItems(uc))
 	}
 }
 
-func GetItems(db *gorm.DB, cache cachekit.Cache) gin.HandlerFunc {
+func GetItems(uc uc.ItemUsecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var opt business.ListOptions
+		var opt dao.ListOptions
 		if err := c.ShouldBindQuery(&opt); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		business.List(c, db, opt, cache)
+		uc.GetItems(c, opt)
 	}
 }

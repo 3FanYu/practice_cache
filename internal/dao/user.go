@@ -20,11 +20,20 @@ func (dao *UserDAO) CreateUser(user *models.User) error {
 }
 
 // GetUserByEmail finds a user by email
-func (dao *UserDAO)GetUserByEmail(email string) (*models.User, error) {
+func (dao *UserDAO) GetUserByEmail(email string) (*models.User, error) {
 	var user models.User
 	result := dao.db.Where("email = ?", email).First(&user)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return &user, nil
+}
+
+type AuthInput struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+type RegisterInput struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }

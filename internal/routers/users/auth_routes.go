@@ -3,37 +3,37 @@ package users
 import (
 	"net/http"
 
-	business "github.com/3fanyu/glossika/internal/business/users"
+	"github.com/3fanyu/glossika/internal/dao"
+	uc "github.com/3fanyu/glossika/internal/usecase/users"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
-func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
+func RegisterRoutes(router *gin.Engine, uc uc.UserUsecase) {
 	userGroup := router.Group("/v1/user")
 	{
-		userGroup.POST("/register", CreateUser(db))
-		userGroup.POST("/sign_in", AuthenticateUser(db))
+		userGroup.POST("/register", CreateUser(uc))
+		userGroup.POST("/sign_in", AuthenticateUser(uc))
 	}
 }
 
-func CreateUser(db *gorm.DB) gin.HandlerFunc {
+func CreateUser(uc uc.UserUsecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var input business.RegisterInput
+		var input dao.RegisterInput
 		if err := c.ShouldBindJSON(&input); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		business.CreateUser(c, db, input)
+		uc.CreateUser(c, input)
 	}
 }
 
-func AuthenticateUser(db *gorm.DB) gin.HandlerFunc {
+func AuthenticateUser(uc uc.UserUsecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var input business.AuthInput
+		var input dao.AuthInput
 		if err := c.ShouldBindJSON(&input); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		business.Auth(c, db, input)
+		uc.Auth(c, input)
 	}
 }

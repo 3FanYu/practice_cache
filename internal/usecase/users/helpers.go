@@ -9,14 +9,14 @@ import (
 
 // hashPassword creates a bcrypt hash of the password
 func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err
 }
 
 // checkPasswordHash compares a bcrypt hashed password with its possible plaintext equivalent
-func checkPasswordHash(password, hash string) bool {
+func checkPasswordHash(password, hash string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
+	return err
 }
 
 func generateJWTToken(userID uint) (string, error) {
