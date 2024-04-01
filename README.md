@@ -21,3 +21,23 @@
 5. Finally, view item recommendations!
    - GET `/v1/items/recommendations`
    - Remember to bring a header of `Authorization: Bearer {YourToken}`
+
+
+# Design Road Map
+## Functinal Requirements
+1. Registration
+2. User sign in
+3. Email verification
+4. View recommendation list
+
+## Non Functional Requirements
+1. 300RPM == 5RPS
+2. 3 sec DB query
+
+## Caching 
+As explained above, obviously 3 seconds of DB query will lead to bad UX. Therefore, cache implementaion is a must in this scenario.
+After the cache is stored, it is going to greatly improve reponse time of the API. How about before the cache is stored? We've gotta initiate the cache at some point.
+When the API is first used, its going to take more than 3 seconds since the DB qeury itself takes 3 seonds. And we are dealing with 5RPS, that means 15 requests within 3 seconds.
+That is 15 concurrent requests all with missed cache and querying against DB!
+To prevent that, I decided to implement SingleFlight(https://pkg.go.dev/golang.org/x/sync/singleflight) to have just 1 request to query against DB at once.
+
